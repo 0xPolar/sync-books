@@ -36,6 +36,15 @@ func (db *DB) Init() error {
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
         name TEXT
     );
+
+		CREATE TABLE IF NOT EXISTS books (
+			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+			title TEXT,
+			author TEXT,
+			thumbnail TEXT,
+			series_id INTEGER,
+			progress FLOAT,
+		);
     `
 	_, err = db.conn.Exec(sqlStmt)
 	if err != nil {
