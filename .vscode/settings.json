@@ -1,0 +1,11 @@
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "test",
+      "database": "${workspaceFolder:go-currently-reading}/cmd/sync/test.db"
+    }
+  ],
+  "sqltools.useNodeRuntime": true
+}
