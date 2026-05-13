@@ -18,6 +18,9 @@ func (c *Client) Me(ctx context.Context) (*UserDto, error) {
 	if err := c.do(ctx, "GET", "/api/Account", nil, &u, true); err != nil {
 		return nil, err
 	}
+	c.mu.Lock()
+	c.userID = u.ID
+	c.mu.Unlock()
 	return &u, nil
 }
 
@@ -47,6 +50,11 @@ func (c *Client) Libraries(ctx context.Context) ([]LibraryDto, error) {
 // and walk the chapters.
 func (c *Client) CurrentlyReading(ctx context.Context, userID, pageNumber, pageSize int) ([]SeriesDto, error) {
 	q := url.Values{}
+	if userID == 0 {
+		c.mu.RLock()
+		userID = c.userID
+		c.mu.RUnlock()
+	}
 	if userID > 0 {
 		q.Set("userId", strconv.Itoa(userID))
 	}
@@ -148,23 +156,23 @@ func (c *Client) HasProgress(ctx context.Context, seriesID int) (bool, error) {
 // chapter in image libraries, a book in epub/pdf libraries). This is the
 // shape your sidecar will most likely emit.
 type BookSummary struct {
-	SeriesID       int       `json:"series_id"`
-	ChapterID      int       `json:"chapter_id"`
-	VolumeID       int       `json:"volume_id"`
-	LibraryID      int       `json:"library_id"`
-	Title          string    `json:"title"`
-	SeriesName     string    `json:"series_name"`
-	Authors        []string  `json:"authors,omitempty"`
-	ISBN           string    `json:"isbn,omitempty"`
-	Thumbnail      string    `json:"thumbnail"`
-	Pages          int       `json:"pages"`
-	PagesRead      int       `json:"pages_read"`
-	ProgressPct    float64   `json:"progress_pct"`
-	LastReadUTC    time.Time `json:"last_read_utc,omitempty"`
-	Summary        string    `json:"summary,omitempty"`
-	ReleaseDate    time.Time `json:"release_date,omitempty"`
-	WordCount      int64     `json:"word_count,omitempty"`
-	Language       string    `json:"language,omitempty"`
+	SeriesID    int       `json:"series_id"`
+	ChapterID   int       `json:"chapter_id"`
+	VolumeID    int       `json:"volume_id"`
+	LibraryID   int       `json:"library_id"`
+	Title       string    `json:"title"`
+	SeriesName  string    `json:"series_name"`
+	Authors     []string  `json:"authors,omitempty"`
+	ISBN        string    `json:"isbn,omitempty"`
+	Thumbnail   string    `json:"thumbnail"`
+	Pages       int       `json:"pages"`
+	PagesRead   int       `json:"pages_read"`
+	ProgressPct float64   `json:"progress_pct"`
+	LastReadUTC time.Time `json:"last_read_utc,omitempty"`
+	Summary     string    `json:"summary,omitempty"`
+	ReleaseDate time.Time `json:"release_date,omitempty"`
+	WordCount   int64     `json:"word_count,omitempty"`
+	Language    string    `json:"language,omitempty"`
 }
 
 // ToBookSummary flattens a Chapter (within a known Series) into a sidecar-
@@ -207,9 +215,9 @@ func (c *Client) ToBookSummary(s SeriesDto, ch ChapterDto) BookSummary {
 		Pages:       ch.Pages,
 		PagesRead:   ch.PagesRead,
 		ProgressPct: pct,
-		LastReadUTC: ch.LastReadingProgressUtc,
+		LastReadUTC: ch.LastReadingProgressUtc.Time,
 		Summary:     ch.Summary,
-		ReleaseDate: ch.ReleaseDate,
+		ReleaseDate: ch.ReleaseDate.Time,
 		WordCount:   ch.WordCount,
 		Language:    ch.Language,
 	}
@@ -242,7 +250,17 @@ func (c *Client) CurrentlyReadingBooks(ctx context.Context, userID int, minProgr
 				if ch.PagesRead == 0 {
 					continue
 				}
-				bs := c.ToBookSummary(s, ch)
+				// Volumes endpoint returns lightweight chapters; fetch full
+				// metadata (ISBN, writers, etc.) from the Chapter endpoint.
+				full, err := c.Chapter(ctx, ch.ID)
+				if err != nil {
+					return nil, fmt.Errorf("chapter %d: %w", ch.ID, err)
+				}
+				// Preserve progress fields that come from the volume response.
+				full.PagesRead = ch.PagesRead
+				full.LastReadingProgressUtc = ch.LastReadingProgressUtc
+				full.LastReadingProgress = ch.LastReadingProgress
+				bs := c.ToBookSummary(s, *full)
 				if bs.ProgressPct < minProgressPct {
 					continue
 				}

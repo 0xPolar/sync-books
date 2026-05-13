@@ -28,6 +28,7 @@ type Client struct {
 	mu           sync.RWMutex
 	token        string
 	refreshToken string
+	userID       int
 }
 
 // New builds a Client. baseURL should be the full Kavita root, e.g.

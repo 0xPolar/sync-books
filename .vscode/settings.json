@@ -3,8 +3,8 @@
     {
       "previewLimit": 50,
       "driver": "SQLite",
-      "name": "test",
-      "database": "${workspaceFolder:go-currently-reading}/cmd/sync/test.db"
+      "database": "${workspaceFolder:go-currently-reading}/books.db",
+      "name": "Books"
     }
   ],
   "sqltools.useNodeRuntime": true

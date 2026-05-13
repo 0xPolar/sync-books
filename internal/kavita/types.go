@@ -6,8 +6,6 @@
 // Generated against: https://raw.githubusercontent.com/Kareadita/Kavita/develop/openapi.json
 package kavita
 
-import "time"
-
 // ---------------------------------------------------------------------------
 // Enums
 // ---------------------------------------------------------------------------
@@ -76,6 +74,7 @@ const (
 // UserDto is returned from /api/Plugin/authenticate and /api/Account/login.
 // The Token field is what you pass as `Authorization: Bearer <Token>`.
 type UserDto struct {
+	ID             int       `json:"id"`
 	Username       string    `json:"username"`
 	Email          string    `json:"email,omitempty"`
 	Token          string    `json:"token"`
@@ -84,7 +83,7 @@ type UserDto struct {
 	Preferences    any       `json:"preferences,omitempty"`
 	AgeRestriction any       `json:"ageRestriction,omitempty"`
 	KavitaVersion  string    `json:"kavitaVersion,omitempty"`
-	Created        time.Time `json:"created,omitempty"`
+	Created        KavitaTime `json:"created,omitempty"`
 }
 
 // TokenRequestDto is used for /api/Account/refresh-token.
@@ -102,7 +101,7 @@ type LibraryDto struct {
 	ID                          int         `json:"id"`
 	Name                        string      `json:"name"`
 	Type                        LibraryType `json:"type"`
-	LastScanned                 time.Time   `json:"lastScanned"`
+	LastScanned                 KavitaTime   `json:"lastScanned"`
 	CoverImage                  string      `json:"coverImage,omitempty"`
 	FolderWatching              bool        `json:"folderWatching"`
 	IncludeInDashboard          bool        `json:"includeInDashboard"`
@@ -129,15 +128,15 @@ type SeriesDto struct {
 	SortName            string      `json:"sortName,omitempty"`
 	Pages               int         `json:"pages"`
 	CoverImageLocked    bool        `json:"coverImageLocked"`
-	LastChapterAdded    time.Time   `json:"lastChapterAdded"`
-	LastChapterAddedUtc time.Time   `json:"lastChapterAddedUtc"`
+	LastChapterAdded    KavitaTime   `json:"lastChapterAdded"`
+	LastChapterAddedUtc KavitaTime   `json:"lastChapterAddedUtc"`
 	UserRating          float32     `json:"userRating"`
 	HasUserRated        bool        `json:"hasUserRated"`
 	TotalReads          int         `json:"totalReads"`
 	PagesRead           int         `json:"pagesRead"`
-	LatestReadDate      time.Time   `json:"latestReadDate"`
+	LatestReadDate      KavitaTime   `json:"latestReadDate"`
 	Format              MangaFormat `json:"format"`
-	Created             time.Time   `json:"created"`
+	Created             KavitaTime   `json:"created"`
 	WordCount           int64       `json:"wordCount"`
 	LibraryID           int         `json:"libraryId"`
 	LibraryName         string      `json:"libraryName,omitempty"`
@@ -160,9 +159,9 @@ type VolumeDto struct {
 	Name            string       `json:"name,omitempty"`
 	Pages           int          `json:"pages"`
 	PagesRead       int          `json:"pagesRead"`
-	LastModifiedUtc time.Time    `json:"lastModifiedUtc"`
-	Created         time.Time    `json:"created"`
-	CreatedUtc      time.Time    `json:"createdUtc"`
+	LastModifiedUtc KavitaTime    `json:"lastModifiedUtc"`
+	Created         KavitaTime    `json:"created"`
+	CreatedUtc      KavitaTime    `json:"createdUtc"`
 	SeriesID        int          `json:"seriesId"`
 	Chapters        []ChapterDto `json:"chapters,omitempty"`
 	CoverImage      string       `json:"coverImage,omitempty"`
@@ -182,14 +181,14 @@ type ChapterDto struct {
 	Files                  []MangaFileDto    `json:"files,omitempty"`
 	PagesRead              int               `json:"pagesRead"`
 	TotalReads             int               `json:"totalReads"`
-	LastReadingProgressUtc time.Time         `json:"lastReadingProgressUtc"`
-	LastReadingProgress    time.Time         `json:"lastReadingProgress"`
+	LastReadingProgressUtc KavitaTime         `json:"lastReadingProgressUtc"`
+	LastReadingProgress    KavitaTime         `json:"lastReadingProgress"`
 	CoverImageLocked       bool              `json:"coverImageLocked"`
 	VolumeID               int               `json:"volumeId"`
-	CreatedUtc             time.Time         `json:"createdUtc"`
-	LastModifiedUtc        time.Time         `json:"lastModifiedUtc"`
-	Created                time.Time         `json:"created"`
-	ReleaseDate            time.Time         `json:"releaseDate"`
+	CreatedUtc             KavitaTime         `json:"createdUtc"`
+	LastModifiedUtc        KavitaTime         `json:"lastModifiedUtc"`
+	Created                KavitaTime         `json:"created"`
+	ReleaseDate            KavitaTime         `json:"releaseDate"`
 	TitleName              string            `json:"titleName,omitempty"`
 	Summary                string            `json:"summary,omitempty"`
 	AgeRating              AgeRating         `json:"ageRating"`
@@ -226,7 +225,7 @@ type MangaFileDto struct {
 	Pages     int         `json:"pages"`
 	Bytes     int64       `json:"bytes"`
 	Format    MangaFormat `json:"format"`
-	Created   time.Time   `json:"created"`
+	Created   KavitaTime   `json:"created"`
 	Extension string      `json:"extension,omitempty"`
 }
 
@@ -268,5 +267,5 @@ type ProgressDto struct {
 	SeriesID        int       `json:"seriesId"`
 	LibraryID       int       `json:"libraryId"`
 	BookScrollID    string    `json:"bookScrollId,omitempty"`
-	LastModifiedUtc time.Time `json:"lastModifiedUtc"`
+	LastModifiedUtc KavitaTime `json:"lastModifiedUtc"`
 }
