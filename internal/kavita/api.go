@@ -173,6 +173,7 @@ type BookSummary struct {
 	ReleaseDate time.Time `json:"release_date,omitempty"`
 	WordCount   int64     `json:"word_count,omitempty"`
 	Language    string    `json:"language,omitempty"`
+	Blacklisted bool      `json:"blacklisted,omitempty"`
 }
 
 // ToBookSummary flattens a Chapter (within a known Series) into a sidecar-

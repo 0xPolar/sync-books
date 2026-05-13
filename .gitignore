@@ -5,6 +5,7 @@
 *.exe
 *.exe~
 *.dll
+*.db
 *.so
 *.dylib
 

@@ -52,7 +52,8 @@ func (db *DB) Init() error {
 		release_date   TEXT,
 		word_count     INTEGER NOT NULL DEFAULT 0,
 		language       TEXT,
-		updated_at     TEXT NOT NULL
+		updated_at     TEXT NOT NULL,
+		blacklisted    INTEGER NOT NULL DEFAULT 0
 	);
 	CREATE INDEX IF NOT EXISTS idx_books_series ON books(series_id);
 	CREATE INDEX IF NOT EXISTS idx_books_last_read ON books(last_read_utc DESC);
@@ -137,7 +138,7 @@ func (db *DB) DeleteBook(chapterID int) error {
 
 const BOOK_COLUMNS = `chapter_id, series_id, volume_id, library_id, title, series_name,
 	authors, isbn, thumbnail, pages, pages_read, progress_pct, last_read_utc,
-	summary, release_date, word_count, language`
+	summary, release_date, word_count, language, blacklisted`
 
 type execer interface {
 	Exec(query string, args ...any) (sql.Result, error)
@@ -153,8 +154,9 @@ func upsertBook(e execer, b kavita.BookSummary) error {
 		INSERT INTO books (
 			chapter_id, series_id, volume_id, library_id, title, series_name,
 			authors, isbn, thumbnail, pages, pages_read, progress_pct,
-			last_read_utc, summary, release_date, word_count, language, updated_at
-		) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+			last_read_utc, summary, release_date, word_count, language, updated_at,
+			blacklisted
+		) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 		ON CONFLICT(chapter_id) DO UPDATE SET
 			series_id     = excluded.series_id,
 			volume_id     = excluded.volume_id,
@@ -178,6 +180,7 @@ func upsertBook(e execer, b kavita.BookSummary) error {
 		string(authors), b.ISBN, b.Thumbnail, b.Pages, b.PagesRead, b.ProgressPct,
 		nullableTime(b.LastReadUTC), b.Summary, nullableTime(b.ReleaseDate),
 		b.WordCount, b.Language, time.Now().UTC().Format(time.RFC3339),
+		b.Blacklisted,
 	)
 	return err
 }
@@ -194,10 +197,11 @@ func scanBook(s scanner) (kavita.BookSummary, error) {
 		summary, lang sql.NullString
 		lastRead, rel sql.NullString
 	)
+	var blacklisted int
 	err := s.Scan(
 		&b.ChapterID, &b.SeriesID, &b.VolumeID, &b.LibraryID, &b.Title, &b.SeriesName,
 		&authorsJSON, &isbn, &thumb, &b.Pages, &b.PagesRead, &b.ProgressPct,
-		&lastRead, &summary, &rel, &b.WordCount, &lang,
+		&lastRead, &summary, &rel, &b.WordCount, &lang, &blacklisted,
 	)
 	if err != nil {
 		return b, err
@@ -214,6 +218,7 @@ func scanBook(s scanner) (kavita.BookSummary, error) {
 	b.Language = lang.String
 	b.LastReadUTC = parseTime(lastRead)
 	b.ReleaseDate = parseTime(rel)
+	b.Blacklisted = blacklisted != 0
 	return b, nil
 }
 
